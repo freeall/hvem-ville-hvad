@@ -2,6 +2,6 @@
   "root": "src/",
   "https_only": true,
   "routes": {
-    "/**": "src/index.html"
+    "/**": "index.html"
   }
 }
