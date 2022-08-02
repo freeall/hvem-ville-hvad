@@ -1,5 +1,8 @@
+<!doctype html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="./gradstop.js"></script>
     <style>
       html, body {
@@ -251,7 +254,7 @@
           const color = gradstop({
             stops: names.length,
             inputFormat: 'hex',
-            colorArray: ['#DB073D', '#07485B']
+            colorArray: ['#f70845', '#fb91ac']
           })[index]
 
           const $player = createNode('div', 'player')
@@ -273,7 +276,7 @@
           const color = gradstop({
             stops: potentialAnswers.length,
             inputFormat: 'hex',
-            colorArray: ['#FAFA6E', '#2A4858']
+            colorArray: ['#418626', '#a2de8a']
           })[index]
 
           const $answer = createNode('div', 'answer')
