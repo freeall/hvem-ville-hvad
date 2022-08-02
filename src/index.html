@@ -172,11 +172,11 @@
           passive: false,
           useCapture: false
         })
-        window.addEventListwener('resize', () => {
+        window.addEventListener('resize', () => {
           $body.clientWidth = window.innerWidth
           $body.clientHeight = window.innerHeight
         })
-        window.addEventListener('load', () => window.onresize())
+        window.addEventListener('load', () => window.dispatchEvent(new Event('resize')))
 
         // Add setup handler
         $body.addEventListener('keydown', e => {
