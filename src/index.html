@@ -1,14 +1,15 @@
 <!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <script src="./gradstop.js"></script>
     <style>
@@ -159,9 +160,23 @@
       init()
 
       function init () {
+        // Load stored or default players and answers
         const { players, answers } = loadFromStorage()
         addPlayers(players) // ['Mads', 'Nanna', 'Tobias'])
         addAnswers(answers) //['Mads', 'Nanna', 'Frida', 'Líam', 'Tobias', 'Ellen', 'Martin', 'Sofie', 'Olga', 'Sine'])
+
+        // Make sure you can't scroll
+        document.body.addEventListener('touchmove', e => {
+          e.preventDefault()
+        }, {
+          passive: false,
+          useCapture: false
+        })
+        window.addEventListwener('resize', () => {
+          $body.clientWidth = window.innerWidth
+          $body.clientHeight = window.innerHeight
+        })
+        window.addEventListener('load', () => window.onresize())
 
         // Add setup handler
         $body.addEventListener('keydown', e => {
