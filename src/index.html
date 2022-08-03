@@ -187,13 +187,13 @@
           settings
         </div>
         <div class="title">
-          Players
+          Spillere
         </div>
         <div>
           <input id="player-names-input" type="text">
         </div>
         <div class="title">
-          Potential answers
+          Mulige svar
         </div>
         <div>
           <input id="potential-answers-input" type="text">
@@ -205,19 +205,10 @@
     </div>
     <div id="end-of-round-wrapper">
       <div id="end-of-round-panel">
-        <div class="question title">
-          Hvem er den første til at springe i faldskærm?
-        </div>
-        <div class="answerers">
-          <div>Mads svarede Frida (0 point)</div>
-          <div>Tobias svarede Nanna (1 point)</div>
-        </div>
-        <div class="answer">
-          Det rigtige svar var Nanna
-        </div>
-        <div class="question-for-player-score">
-          Nanna får 1 point
-        </div>
+        <div class="question title"></div>
+        <div class="answerers"></div>
+        <div class="answer"></div>
+        <div class="question-for-player-score"></div>
         <div class="next-question">
           Næste runde
         </div>
@@ -245,10 +236,26 @@
       const players = []
       const answers = []
       const questions = [
+        'Hvem har en skjult tatovering?',
+        'Hvem skal tisse næste gang?',
+        'Hvem åbner først et stutteri?',
+        'Hvem står på floor fredag aften?',
+        'Hvem spiser sine bussemænd?',
+        'Hvem efterlader andemad når man drikker af fælles flaske?',
         'Hvem er den første til at springe i faldskærm?',
-        'Hvem er den første på dansegulvet?',
+        'Hvem er den første til at hoppe ud af en flyver?',
+        'Hvem fæller sit eget træ juleaften?',
+        'Hvem ser barnaby fredag aften?',
+        'Hvem elsker blodpølse?',
         'Hvem tuder først?',
-        'Hvem skal tisse næste gange?'
+        'Hvem har solbriller på indenfor?',
+        'Hvem er et mærkedyr?',
+        'Hvem panikker først i lufthavnen?',
+        'Hvem er den første der får en tatovering?',
+        'Hvem åbner først blandselv slikposen?',
+        'Hvem er den første på dansegulvet?',
+        'Hvem er mest villig til at røre et stødhegn?',
+        'Hvem får et hosteanfald inde i kirken?'
       ]
       let isInputAllowed = true
 
