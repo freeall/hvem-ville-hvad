@@ -291,7 +291,11 @@
         firstQuestion()
         render()
 
-        // If settings menu is set, then
+        // If settings menu is set, then start by opening menu
+        const shouldOpenSettings = location.search.includes('settings')
+        if (shouldOpenSettings) {
+          $menuWrapper.classList.add('shown')
+        }
       }
 
       function createNode (type, className) {
