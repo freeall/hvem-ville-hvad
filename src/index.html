@@ -51,13 +51,14 @@
       }
 
       #question-panel {
-        height: 150px;
-        font-size: 26px;
+        min-height: 150px;
+        font-size: 23px;
         color: white;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        text-align: center;
       }
 
       #answers-panel {
@@ -289,6 +290,8 @@
         // Start with first question
         firstQuestion()
         render()
+
+        // If settings menu is set, then
       }
 
       function createNode (type, className) {
