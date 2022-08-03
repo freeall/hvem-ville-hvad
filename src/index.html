@@ -19,6 +19,7 @@
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         padding: 0;
         margin: 0;
+        background-color: black;
       }
 
       #page-wrapper {
@@ -51,7 +52,8 @@
 
       #question-panel {
         height: 150px;
-        font-size: 30px;
+        font-size: 26px;
+        color: white;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -63,18 +65,29 @@
         display: flex;
         flex-wrap: wrap;
       }
-
-      .answer {
+      #answers-panel .answer {
         width: calc(100% / 4);
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 1;
+        font-size: 24px;
       }
-      .answer:hover {
+      #answers-panel .answer:hover {
         cursor: pointer;
-        opacity: 0.5;
-        transition: opacity 0.5s ease-in-out;
+      }
+      #answers-panel .answer.on-answer-animation {
+        animation-name: onAnswerAnimation;
+        animation-duration: 0.5s;
+        animation-iteration-count: 2;
+        animation-timing-function: linear;
+      }
+      @keyframes onAnswerAnimation {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.3); }
+        50% { transform: scale(1); }
+        75% { transform: scale(0.7); }
+        100% { transform: scale(1.0); }
       }
 
       #menu-wrapper {
@@ -96,12 +109,62 @@
       #menu-wrapper .content {
         width: 250px;
       }
-      #menu-wrapper .title {
+      .title {
         font-size: 24px;
         margin-top: 20px;
       }
       #menu-wrapper input[type=text] {
         width: 100%;
+      }
+
+      #end-of-round-wrapper {
+        display: none;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 5%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: transparent;
+      }
+      #end-of-round-wrapper.shown {
+        display: flex;
+      }
+
+      #end-of-round-panel {
+        width: 100%;
+        height: 100%;
+        background-color: burlywood;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 40px;
+      }
+      #end-of-round-panel .answerers {
+        text-align: center;
+        margin: 20px 0;
+      }
+      #end-of-round-panel .answerer + .answerer {
+        margin-top: 5px;
+      }
+      #end-of-round-panel .answer {
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+      #end-of-round-panel .next-question {
+        display: none;
+        background-color: chocolate;
+        border-radius: 10px;
+        padding: 10px 25px;
+        font-size: 30px;
+        margin-top: 20px;
+        cursor: pointer;
+      }
+      #end-of-round-panel .next-question.shown {
+        display: block;
       }
     </style>
   </head>
@@ -136,6 +199,26 @@
         </div>
       </div>
     </div>
+    <div id="end-of-round-wrapper">
+      <div id="end-of-round-panel">
+        <div class="question title">
+          Hvem er den første til at springe i faldskærm?
+        </div>
+        <div class="answerers">
+          <div>Mads svarede Frida (0 point)</div>
+          <div>Tobias svarede Nanna (1 point)</div>
+        </div>
+        <div class="answer">
+          Det rigtige svar var Nanna
+        </div>
+        <div class="question-for-player-score">
+          Nanna får 1 point
+        </div>
+        <div class="next-question">
+          Næste runde
+        </div>
+      </div>
+    </div>
     <script>
       const $body = document.body
       const $scorePanel = document.querySelector('#score-panel')
@@ -147,6 +230,12 @@
       const $playerNamesInput = document.querySelector('#player-names-input')
       const $potentialAnswersInput = document.querySelector('#potential-answers-input')
       const $resetGameButton = document.querySelector('#reset-game-button')
+      const $endOfRoundWrapper = document.querySelector('#end-of-round-wrapper')
+      const $endOfRoundQuestion = document.querySelector('#end-of-round-wrapper .question')
+      const $endOfRoundAnswer = document.querySelector('#end-of-round-wrapper .answer')
+      const $endOfRoundNextQuestionButton = document.querySelector('#end-of-round-wrapper .next-question')
+      const $endOfRoundAnswerers = document.querySelector('#end-of-round-wrapper .answerers')
+      const $endOfRoundQuestionForPlayerScore = document.querySelector('#end-of-round-wrapper .question-for-player-score')
       const currentQuestionState = {}
       const players = []
       const answers = []
@@ -156,16 +245,17 @@
         'Hvem tuder først?',
         'Hvem skal tisse næste gange?'
       ]
+      let isInputAllowed = true
 
       init()
 
       function init () {
         // Load stored or default players and answers
         const { players, answers } = loadFromStorage()
-        addPlayers(players) // ['Mads', 'Nanna', 'Tobias'])
-        addAnswers(answers) //['Mads', 'Nanna', 'Frida', 'Líam', 'Tobias', 'Ellen', 'Martin', 'Sofie', 'Olga', 'Sine'])
+        addPlayers(players)
+        addAnswers(answers)
 
-        // Make sure you can't scroll
+        // To make phone experience better, make sure users can't scroll
         document.body.addEventListener('touchmove', e => {
           e.preventDefault()
         }, {
@@ -241,33 +331,66 @@
         currentAnswerer = player
       }
 
-      function onAnswer (answer) {
-        const { answerer, questionForPlayer, question } = currentQuestionState
-        const isQuestionForAndAnswererTheSame = answerer === questionForPlayer
-
+      async function onAnswer (answer) {
+        const isQuestionForAndAnswererTheSame = currentQuestionState.answerer === currentQuestionState.questionForPlayer
         if (isQuestionForAndAnswererTheSame) {
           currentQuestionState.questionForPlayerAnswered = answer
         } else {
           currentQuestionState.answerersAnswers.push({
             answer,
-            player: answerer
+            player: currentQuestionState.answerer
           })
         }
-        currentQuestionState.missingAnswerers = currentQuestionState.missingAnswerers.filter(a => a !== answerer)
+        currentQuestionState.missingAnswerers = currentQuestionState.missingAnswerers.filter(a => a !== currentQuestionState.answerer)
 
-        const haveAllAnswered = currentQuestionState.missingAnswerers.length === 0
-        if (haveAllAnswered) {
-          const correctAnsweres = currentQuestionState.answerersAnswers.filter(pa => pa.answer === currentQuestionState.questionForPlayerAnswered)
+        const isRoundDone = currentQuestionState.missingAnswerers.length === 0
+        if (!isRoundDone) {
+          currentQuestionState.answerer.node.classList.remove('current-answerer')
+          currentQuestionState.answerer = currentQuestionState.missingAnswerers[0]
+          currentQuestionState.answerer.node.classList.add('current-answerer')
+          render()
+          return
+        }
+
+        const correctAnsweres = currentQuestionState.answerersAnswers.filter(pa => pa.answer === currentQuestionState.questionForPlayerAnswered)
+
+        // End of round animation
+        $endOfRoundQuestion.innerText = currentQuestionState.question
+        $endOfRoundAnswer.innerText = ''
+        $endOfRoundAnswerers.innerHTML = ''
+        $endOfRoundNextQuestionButton.classList.remove('shown')
+        $endOfRoundQuestionForPlayerScore.innerHTML = ''
+        $endOfRoundWrapper.classList.add('shown')
+        await sleep(3000)
+
+        for (const player of players) {
+          const isQuestionForPlayer = player === currentQuestionState.questionForPlayer
+          const playersAnswer = currentQuestionState.answerersAnswers.find(a => a.player === player)
+          if (isQuestionForPlayer) continue
+          const $div = createNode('div', 'answerer')
+          $div.innerText = `${player.name} svarede ${playersAnswer.answer.answerText}`
+          $endOfRoundAnswerers.appendChild($div)
+          await sleep(2000)
+        }
+
+        $endOfRoundAnswer.innerText = `Det rigtige svar var ${currentQuestionState.questionForPlayerAnswered.answerText}`
+        await sleep(2000)
+        $endOfRoundQuestionForPlayerScore.innerText = `${currentQuestionState.questionForPlayer.name} får ${correctAnsweres.length} point${correctAnsweres.length === 1 ? '' : 's'}`
+        await sleep(2000)
+        $endOfRoundNextQuestionButton.classList.add('shown')
+
+        $endOfRoundNextQuestionButton.addEventListener('click', function clickHandler () {
+          $endOfRoundNextQuestionButton.removeEventListener('click', clickHandler)
+          $endOfRoundWrapper.classList.remove('shown')
           currentQuestionState.questionForPlayer.points += correctAnsweres.length
           correctAnsweres.forEach(({ player }) => { player.points += 1 })
           nextQuestion()
-        } else {
-          answerer.node.classList.remove('current-answerer')
-          currentQuestionState.answerer = currentQuestionState.missingAnswerers[0]
-          currentQuestionState.answerer.node.classList.add('current-answerer')
-        }
+          render()
+        })
+      }
 
-        render()
+      async function sleep (ms) {
+        return new Promise(r => setTimeout(r, ms))
       }
 
       function addPlayers (names) {
@@ -304,7 +427,16 @@
           const $answer = createNode('div', 'answer')
           $answer.innerText = answerText
           $answer.style = `background-color: ${color}`
-          $answer.addEventListener('click', () => onAnswer(answer))
+          $answer.addEventListener('click', async () => {
+            if (!isInputAllowed) return
+            isInputAllowed = false
+
+            $answer.classList.add('on-answer-animation')
+            await sleep(1000)
+            $answer.classList.remove('on-answer-animation')
+            isInputAllowed = true
+            onAnswer(answer)
+          })
 
           answer.answerText = answerText
           answer.color = color
