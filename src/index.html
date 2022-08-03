@@ -91,7 +91,7 @@
         100% { transform: scale(1.0); }
       }
 
-      #menu-wrapper {
+      #settings-wrapper {
         display: none;
         justify-content: center;
         align-items: center;
@@ -104,17 +104,17 @@
         opacity: 0.9;
         font-size: 32px;
       }
-      #menu-wrapper.shown {
+      #settings-wrapper.shown {
         display: flex;
       }
-      #menu-wrapper .content {
+      #settings-wrapper .content {
         width: 250px;
       }
       .title {
         font-size: 24px;
         margin-top: 20px;
       }
-      #menu-wrapper input[type=text] {
+      #settings-wrapper input[type=text] {
         width: 100%;
       }
 
@@ -143,6 +143,9 @@
         flex-direction: column;
         align-items: center;
         padding-top: 40px;
+      }
+      #end-of-round-panel .question {
+        text-align: center;
       }
       #end-of-round-panel .answerers {
         text-align: center;
@@ -178,10 +181,10 @@
       </div>
       <div id="answers-panel"></div>
     </div>
-    <div id="menu-wrapper">
+    <div id="settings-wrapper">
       <div class="content">
-        <div>
-          menu
+        <div class="header">
+          settings
         </div>
         <div class="title">
           Players
@@ -227,7 +230,8 @@
       const $answersPanel = document.querySelector('#answers-panel')
       const $answerer = document.querySelector('#answerer')
       const $question = document.querySelector('#question')
-      const $menuWrapper = document.querySelector('#menu-wrapper')
+      const $settingsWrapper = document.querySelector('#settings-wrapper')
+      const $settingsHeader = document.querySelector('#settings-wrapper .header')
       const $playerNamesInput = document.querySelector('#player-names-input')
       const $potentialAnswersInput = document.querySelector('#potential-answers-input')
       const $resetGameButton = document.querySelector('#reset-game-button')
@@ -269,20 +273,32 @@
         })
         window.addEventListener('load', () => window.dispatchEvent(new Event('resize')))
 
-        // Add setup handler
+        // Add show settings handler
         $body.addEventListener('keydown', e => {
-          const isToggleMenuButton = e.key.toLowerCase() === 'escape'
-          const isMenuShown = $menuWrapper.classList.contains('shown')
-          if (!isToggleMenuButton) return
+          const isTogglesettingsButton = e.key.toLowerCase() === 'escape'
+          const issettingsShown = $settingsWrapper.classList.contains('shown')
+          if (!isTogglesettingsButton) return
 
-          if (isMenuShown) {
-            $menuWrapper.classList.remove('shown')
+          if (issettingsShown) {
+            $settingsWrapper.classList.remove('shown')
           } else {
-            $menuWrapper.classList.add('shown')
+            $settingsWrapper.classList.add('shown')
+          }
+        })
+
+        // Add click on question to open settings
+        let clickedOnQuestionPanel = 0
+        $questionPanel.addEventListener('click', () => {
+          clickedOnQuestionPanel += 1
+          if (clickedOnQuestionPanel >= 3) {
+            $settingsWrapper.classList.add('shown')
           }
         })
 
         $resetGameButton.addEventListener('click', resetGame)
+        $settingsHeader.addEventListener('click', () => {
+          $settingsWrapper.classList.remove('shown')
+        })
 
         // Reset state
         resetState()
@@ -290,12 +306,6 @@
         // Start with first question
         firstQuestion()
         render()
-
-        // If settings menu is set, then start by opening menu
-        const shouldOpenSettings = location.search.includes('settings')
-        if (shouldOpenSettings) {
-          $menuWrapper.classList.add('shown')
-        }
       }
 
       function createNode (type, className) {
