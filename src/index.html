@@ -221,6 +221,7 @@
         </div>
         <div>
           <input id="reset-game-button" type="submit" value="Reset game">
+          <button id="close-settings-button">Cancel</button>
         </div>
       </div>
     </div>
@@ -247,6 +248,7 @@
       const $playerNamesInput = document.querySelector('#player-names-input')
       const $potentialAnswersInput = document.querySelector('#potential-answers-input')
       const $resetGameButton = document.querySelector('#reset-game-button')
+      const $closeSettingsButton = document.querySelector('#close-settings-button')
       const $endOfRoundWrapper = document.querySelector('#end-of-round-wrapper')
       const $endOfRoundQuestion = document.querySelector('#end-of-round-wrapper .question')
       const $endOfRoundAnswer = document.querySelector('#end-of-round-wrapper .answer')
@@ -326,6 +328,7 @@
         })
 
         $resetGameButton.addEventListener('click', resetGame)
+        $closeSettingsButton.addEventListener('click', () => $settingsWrapper.classList.remove('shown'))
         $settingsHeader.addEventListener('click', () => {
           $settingsWrapper.classList.remove('shown')
         })
