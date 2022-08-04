@@ -72,6 +72,9 @@
         flex-wrap: wrap;
       }
       #answers-panel .answer {
+        user-select: none;
+        touch-action: none;
+
         position: relative;
         width: calc(100% / 4);
         display: flex;
@@ -98,6 +101,9 @@
         transition: width 2s linear;
       }
       #answers-panel .answer-text {
+        user-select: none;
+        touch-action: none;
+
         z-index: 1;
       }
       #answers-panel .answer.on-answer-animation {
