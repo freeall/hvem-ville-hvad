@@ -485,7 +485,7 @@
           $answerText.innerText = answerText
           $answer.appendChild($answerText)
           $answer.style = `background-color: ${color}`
-          $answer.addEventListener('mousedown', () => {
+          function mousedown () {
             if (!isInputAllowed) return
             isInputAllowed = false
 
@@ -493,12 +493,12 @@
             cancelOnAnswerTimer = setTimeout(() => {
               hasClicked = true
             }, 2000)
-          })
-          $answer.addEventListener('mouseup', async () => {
+          }
+          async function mouseup () {
             $answer.classList.remove('holding')
             clearTimeout(cancelOnAnswerTimer)
 
-            if (hasClicked)  {
+            if (hasClicked) {
               hasClicked = false
               $answer.classList.add('on-answer-animation')
               await sleep(1000)
@@ -507,7 +507,11 @@
             }
 
             isInputAllowed = true
-          })
+          }
+          $answer.addEventListener('mousedown', mousedown)
+          $answer.addEventListener('touchstart', mousedown)
+          $answer.addEventListener('mouseup', mouseup)
+          $answer.addEventListener('touchend', mouseup)
 
           answer.answerText = answerText
           answer.color = color
