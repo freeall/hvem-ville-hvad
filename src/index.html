@@ -38,7 +38,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 26px;
+        font-size: 22px;
         border-width: 4px;
         border-style: dotted;
         border-color: transparent;
@@ -67,6 +67,7 @@
         flex-wrap: wrap;
       }
       #answers-panel .answer {
+        position: relative;
         width: calc(100% / 4);
         display: flex;
         align-items: center;
@@ -76,6 +77,23 @@
       }
       #answers-panel .answer:hover {
         cursor: pointer;
+      }
+      #answers-panel .answer:after {
+        position: absolute;
+        content: "";
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 0%;
+        background: purple;
+        /* transition: all .35s; */
+      }
+      #answers-panel .answer.holding:after {
+        width: 100%;
+        transition: width 2s linear;
+      }
+      #answers-panel .answer-text {
+        z-index: 1;
       }
       #answers-panel .answer.on-answer-animation {
         animation-name: onAnswerAnimation;
@@ -92,6 +110,7 @@
       }
 
       #settings-wrapper {
+        z-index: 2;
         display: none;
         justify-content: center;
         align-items: center;
@@ -119,6 +138,7 @@
       }
 
       #end-of-round-wrapper {
+        z-index: 2;
         display: none;
         position: absolute;
         top: 0;
@@ -150,6 +170,7 @@
       #end-of-round-panel .answerers {
         text-align: center;
         margin: 20px 0;
+        font-size: 20px;
       }
       #end-of-round-panel .answerer + .answerer {
         margin-top: 5px;
@@ -235,19 +256,19 @@
       const currentQuestionState = {}
       const players = []
       const answers = []
-      const questions = [
+      const potentialQuestions = [
         'Hvem har en skjult tatovering?',
         'Hvem skal tisse næste gang?',
         'Hvem åbner først et stutteri?',
         'Hvem står på floor fredag aften?',
-        'Hvem spiser sine bussemænd?',
+        'Hvem spiser flest af sine bussemænd?',
         'Hvem efterlader andemad når man drikker af fælles flaske?',
         'Hvem er den første til at springe i faldskærm?',
         'Hvem er den første til at hoppe ud af en flyver?',
-        'Hvem fæller sit eget træ juleaften?',
-        'Hvem ser barnaby fredag aften?',
+        'Hvem fælder sit eget træ juleaften?',
+        'Hvem ser Barnaby fredag aften?',
         'Hvem elsker blodpølse?',
-        'Hvem tuder først?',
+        'Hvem er den næste der tuder?',
         'Hvem har solbriller på indenfor?',
         'Hvem er et mærkedyr?',
         'Hvem panikker først i lufthavnen?',
@@ -257,6 +278,7 @@
         'Hvem er mest villig til at røre et stødhegn?',
         'Hvem får et hosteanfald inde i kirken?'
       ]
+      const questions = randomizeArray(potentialQuestions)
       let isInputAllowed = true
 
       init()
@@ -298,6 +320,7 @@
         $questionPanel.addEventListener('click', () => {
           clickedOnQuestionPanel += 1
           if (clickedOnQuestionPanel >= 3) {
+            clickedOnQuestionPanel = 0
             $settingsWrapper.classList.add('shown')
           }
         })
@@ -332,10 +355,14 @@
       }
 
       function nextQuestion () {
+        const hasUsedAllQuestions = questions.length === 0
+        if (hasUsedAllQuestions) {
+          emptyArray(questions)
+          randomizeArray(potentialQuestions).forEach(q => questions.push(q))
+        }
+        const nextQuestion = questions.pop()
         const currentQuestionForPlayerIndex = players.findIndex(player => player === currentQuestionState.questionForPlayer)
         const nextQuestionForPlayer = players[(1 + currentQuestionForPlayerIndex) % players.length]
-        const currentQuestionQuestionIndex = questions.findIndex(question => question === currentQuestionState.question)
-        const nextQuestion = questions[(1 + currentQuestionQuestionIndex) % questions.length]
         currentQuestionState.question = nextQuestion
         currentQuestionState.questionForPlayer = nextQuestionForPlayer
         currentQuestionState.missingAnswerers = Array(players.length).fill(0).map((_, index) =>
@@ -448,18 +475,35 @@
             colorArray: ['#418626', '#a2de8a']
           })[index]
 
+          let cancelOnAnswerTimer
+          let hasClicked = false
           const $answer = createNode('div', 'answer')
-          $answer.innerText = answerText
+          const $answerText = createNode('div', 'answer-text')
+          $answerText.innerText = answerText
+          $answer.appendChild($answerText)
           $answer.style = `background-color: ${color}`
-          $answer.addEventListener('click', async () => {
+          $answer.addEventListener('mousedown', () => {
             if (!isInputAllowed) return
             isInputAllowed = false
 
-            $answer.classList.add('on-answer-animation')
-            await sleep(1000)
-            $answer.classList.remove('on-answer-animation')
+            $answer.classList.add('holding')
+            cancelOnAnswerTimer = setTimeout(() => {
+              hasClicked = true
+            }, 2000)
+          })
+          $answer.addEventListener('mouseup', async () => {
+            $answer.classList.remove('holding')
+            clearTimeout(cancelOnAnswerTimer)
+
+            if (hasClicked)  {
+              hasClicked = false
+              $answer.classList.add('on-answer-animation')
+              await sleep(1000)
+              $answer.classList.remove('on-answer-animation')
+              onAnswer(answer)
+            }
+
             isInputAllowed = true
-            onAnswer(answer)
           })
 
           answer.answerText = answerText
@@ -473,8 +517,8 @@
       function resetGame () {
         const newPlayerNames = $playerNamesInput.value.split(',').map(n => n.trim())
         const newPotentialAnswers = $potentialAnswersInput.value.split(',').map(a => a.trim())
-        players.splice(0, players.length)
-        answers.splice(0, answers.length)
+        emptyArray(players)
+        emptyArray(answers)
         addPlayers(newPlayerNames)
         addAnswers(newPotentialAnswers)
         saveToStorage({
@@ -537,6 +581,14 @@
           players,
           answers
         }
+      }
+
+      function randomizeArray (arr) {
+        return [...arr].sort(() => 0.5 - Math.random())
+      }
+
+      function emptyArray (arr) {
+        arr.splice(0, arr.length)
       }
     </script>
   </body>
